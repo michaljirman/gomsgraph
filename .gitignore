@@ -1,0 +1,11 @@
+*.sh
+*.test
+coverage.out
+# intellij files
+.idea/
+vendor/
+.DS_Store
+example/
+temp/
+*.env
+dist/

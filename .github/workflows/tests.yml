@@ -1,0 +1,51 @@
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+name: tests
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go-version: [1.16.x]
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+    - name: Cancel previous
+      uses: styfle/cancel-workflow-action@0.8.0
+      with:
+        access_token: ${{ github.token }}
+
+    - uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - uses: actions/checkout@v2
+
+    - name: Cache go modules
+      uses: actions/cache@v2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Run go test
+      run: go test -v -race -coverprofile coverage.txt -covermode atomic ./...
+
+    # don't actually run tests since they hit live MS Graph API
+#    - name: Ensure integration tests build
+#      run: go test -v -tags=integration -run=^$ ./test/integration
+
+    - name: Upload coverage to Codecov
+      if: ${{ matrix.update-coverage }}
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
