@@ -7,15 +7,15 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/michaljirman/gomsgraph/msgraph"
-	v1 "github.com/michaljirman/gomsgraph/msgraph/v1"
-	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph/beta"
+	. "github.com/michaljirman/gomsgraph/msgraph/beta/models"
 )
 
 func main() {
 	ctx := context.Background()
-	client := v1.NewDefaultClient(ctx)
+	client := beta.NewDefaultClient(ctx)
 
-	req := User{
+	req := &User{
 		Id:                msgraph.String(uuid.NewString()),
 		AccountEnabled:    msgraph.Bool(true),
 		DisplayName:       msgraph.String("Test User"),

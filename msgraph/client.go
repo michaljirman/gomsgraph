@@ -1,4 +1,4 @@
-package core
+package msgraph
 
 import (
 	"bytes"
@@ -8,13 +8,35 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"reflect"
 	"strings"
 
 	"github.com/google/go-querystring/query"
 )
+
+// NewOAuth2ClientFromEnvsOrFail create oauth2 client from environment variables. Fails if envs are not provided.
+func NewOAuth2ClientFromEnvsOrFail(ctx context.Context) *http.Client {
+	clientID := os.Getenv("CLIENT_ID")
+	if clientID == "" {
+		log.Fatal("env variable CLIENT_ID is required")
+	}
+
+	clientSecret := os.Getenv("CLIENT_SECRET")
+	if clientSecret == "" {
+		log.Fatal("env variable CLIENT_SECRET is required")
+	}
+
+	clientTenantID := os.Getenv("CLIENT_TENANT_ID")
+	if clientTenantID == "" {
+		log.Fatal("env variable CLIENT_TENANT_ID is required")
+	}
+
+	return GetOAuth2Client(ctx, clientTenantID, clientID, clientSecret)
+}
 
 // A BaseClient manages communication with the MS Graph API.
 type BaseClient struct {
@@ -28,22 +50,22 @@ type BaseClient struct {
 	UserAgent string
 }
 
-// AddOptions adds the parameters in opts as URL query parameters to s. opts
+// AddOptions adds the parameters in opts as URL query parameters to urlBase. opts
 // must be a struct whose fields may contain "url" tags.
-func AddOptions(s string, opts interface{}) (string, error) {
+func AddOptions(urlBase string, opts interface{}) (string, error) {
 	v := reflect.ValueOf(opts)
 	if v.Kind() == reflect.Ptr && v.IsNil() {
-		return s, nil
+		return urlBase, nil
 	}
 
-	u, err := url.Parse(s)
+	u, err := url.Parse(urlBase)
 	if err != nil {
-		return s, err
+		return urlBase, err
 	}
 
 	qs, err := query.Values(opts)
 	if err != nil {
-		return s, err
+		return urlBase, err
 	}
 
 	u.RawQuery = qs.Encode()
@@ -234,4 +256,66 @@ func (r *ErrorResponse) Error() string {
 	return fmt.Sprintf("%v %v: %d %v",
 		r.Response.Request.Method, r.Response.Request.URL,
 		r.Response.StatusCode, r.Err.Message)
+}
+
+//func BuildURL(resourceName, resourceID string) string {
+//	return fmt.Sprintf("%v/%v", resourceName, resourceID)
+//}
+
+type urlStrBuilder struct {
+	path string
+}
+
+type UrlPart string
+
+func URL(resourceName UrlPart, resourceID ...string) *urlStrBuilder {
+	if len(resourceID) < 1 {
+		return &urlStrBuilder{
+			path: string(resourceName),
+		}
+	}
+	return &urlStrBuilder{
+		path: fmt.Sprintf("%v/%v", resourceName, resourceID[0]),
+	}
+}
+
+func (b *urlStrBuilder) AppendWithID(resourceName UrlPart, resourceID string) *urlStrBuilder {
+	b.path += fmt.Sprintf("/%v/%v", resourceName, resourceID)
+	return b
+}
+
+func (b *urlStrBuilder) Append(resourceName UrlPart) *urlStrBuilder {
+	b.path += fmt.Sprintf("/%v", resourceName)
+	return b
+}
+
+func (b *urlStrBuilder) Build() string {
+	return b.path
+}
+
+func (b *urlStrBuilder) BuildWithPrefix(prefix string) string {
+	return prefix + b.path
+}
+
+// AddOptions adds the parameters in opts as URL query parameters to urlBase. opts
+// must be a struct whose fields may contain "url" tags.
+func (b *urlStrBuilder) Options(opts interface{}) *urlStrBuilder {
+	v := reflect.ValueOf(opts)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return b
+	}
+
+	u, err := url.Parse(b.path)
+	if err != nil {
+		panic("invalid opts")
+	}
+
+	qs, err := query.Values(opts)
+	if err != nil {
+		panic("invalid opts")
+	}
+
+	u.RawQuery = qs.Encode()
+	b.path = u.String()
+	return b
 }

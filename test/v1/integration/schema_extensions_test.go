@@ -1,6 +1,6 @@
 // +build integration
 
-package v1
+package integration
 
 import (
 	"context"
@@ -10,15 +10,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
-	msgraph "github.com/michaljirman/gomsgraph/msgraph/v1"
-	"github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph"
+	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
 )
 
 func TestListSchemaExtensionsWithPagination(t *testing.T) {
 	ctx := context.Background()
-	opts := &msgraph.SchemaExtensionListOptions{}
-	var allSchemaExtensions []*models.SchemaExtension
+	opts := &ListOptions{}
+	var allSchemaExtensions []*SchemaExtension
 	for {
 		resp, err := client.SchemaExtensions.ListAll(ctx, opts)
 		require.NoError(t, err)
@@ -33,16 +32,16 @@ func TestListSchemaExtensionsWithPagination(t *testing.T) {
 func TestCreateSchemaExtension(t *testing.T) {
 	// create a test user
 	ctx := context.Background()
-	req := &models.User{
-		Id:                core.String(uuid.NewString()),
-		AccountEnabled:    core.Bool(true),
-		DisplayName:       core.String("Test User"),
-		MailNickname:      core.String("TestU"),
-		UserPrincipalName: core.String("TestU@testebworkspace.onmicrosoft.com"),
-		PasswordProfile: &models.PasswordProfile{
-			Password:                             core.String(uuid.NewString()),
-			ForceChangePasswordNextSignIn:        core.Bool(true),
-			ForceChangePasswordNextSignInWithMfa: core.Bool(true),
+	req := User{
+		Id:                msgraph.String(uuid.NewString()),
+		AccountEnabled:    msgraph.Bool(true),
+		DisplayName:       msgraph.String("Test User"),
+		MailNickname:      msgraph.String("TestU"),
+		UserPrincipalName: msgraph.String("TestU@testebworkspace.onmicrosoft.com"),
+		PasswordProfile: &PasswordProfile{
+			Password:                             msgraph.String(uuid.NewString()),
+			ForceChangePasswordNextSignIn:        msgraph.Bool(true),
+			ForceChangePasswordNextSignInWithMfa: msgraph.Bool(true),
 		},
 	}
 	userResp, err := client.Users.CreateUser(ctx, req)
@@ -56,16 +55,16 @@ func TestCreateSchemaExtension(t *testing.T) {
 	}()
 
 	// create a test schema extension for a test user
-	schemaExtResource := &models.SchemaExtension{
-		Id:          core.String("courses"),
-		Description: core.String("Graph Learn training courses extensions"),
+	schemaExtResource := SchemaExtension{
+		Id:          msgraph.String("courses"),
+		Description: msgraph.String("Graph Learn training courses extensions"),
 		TargetTypes: &[]string{
 			"User",
 		},
-		Properties: &[]models.ExtensionSchemaProperty{
+		Properties: &[]ExtensionSchemaProperty{
 			{
-				Name: core.String("courseName"),
-				Type: core.String("String"),
+				Name: msgraph.String("courseName"),
+				Type: msgraph.String("String"),
 			},
 		},
 	}
@@ -89,7 +88,7 @@ func TestCreateSchemaExtension(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		// fetch user data with schema extension properties stored in the AdditionalData
-		getUserResp, err := client.Users.GetUser(ctx, *userResp.Id, &msgraph.UserListOptions{
+		getUserResp, err := client.Users.GetUser(ctx, *userResp.Id, &ListOptions{
 			Select: "displayName,id," + *schemaExtResp.Id,
 		})
 		require.NoError(t, err)

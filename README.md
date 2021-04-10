@@ -37,87 +37,48 @@ package main
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"log"
 
 	"github.com/google/uuid"
 
 	"github.com/michaljirman/gomsgraph/msgraph"
-	"github.com/michaljirman/gomsgraph/msgraph/models"
-)
-
-var (
-	azureClientID     string
-	azureClientSecret string
-	azureTenantID     string
+	v1 "github.com/michaljirman/gomsgraph/msgraph/v1"
+	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
 )
 
 func main() {
-	flag.StringVar(&azureClientID, "azure-client-id", "", "")
-	flag.StringVar(&azureClientSecret, "azure-client-secret", "", "")
-	flag.StringVar(&azureTenantID, "azure-client-tenant-id", "", "")
-	flag.Parse()
-
-	if azureClientID == "" {
-		log.Fatal("azure client id is required")
-	}
-
-	if azureClientSecret == "" {
-		log.Fatal("azure client secret is required")
-	}
-
-	if azureTenantID == "" {
-		log.Fatal("azure tenant id is required")
-	}
-
 	ctx := context.Background()
-	tc := msgraph.GetOAuth2Client(ctx, azureTenantID, azureClientID, azureClientSecret)
-	client := msgraph.NewClient(tc)
-}
-```
+	client := v1.NewDefaultClient(ctx)
 
-To create a new User: 
-```go
-ctx := context.Background()
-req := &models.User{
-    Id:                msgraph.String(uuid.NewString()),
-    AccountEnabled:    msgraph.Bool(true),
-    DisplayName:       msgraph.String("Test User"),
-    MailNickname:      msgraph.String("TestU"),
-    UserPrincipalName: msgraph.String("TestU@testworkspace.onmicrosoft.com"),
-    PasswordProfile: &models.PasswordProfile{
-        Password:                             msgraph.String(uuid.NewString()),
-        ForceChangePasswordNextSignIn:        msgraph.Bool(true),
-        ForceChangePasswordNextSignInWithMfa: msgraph.Bool(true),
-    },
-}
-userResp, err := client.Users.CreateUser(ctx, req)
-```
+	req := User{
+		Id:                msgraph.String(uuid.NewString()),
+		AccountEnabled:    msgraph.Bool(true),
+		DisplayName:       msgraph.String("Test User"),
+		MailNickname:      msgraph.String("TestU"),
+		UserPrincipalName: msgraph.String("TestU@testworkspace.onmicrosoft.com"),
+		PasswordProfile: &PasswordProfile{
+			Password:                             msgraph.String(uuid.NewString()),
+			ForceChangePasswordNextSignIn:        msgraph.Bool(true),
+			ForceChangePasswordNextSignInWithMfa: msgraph.Bool(true),
+		},
+	}
+	userResp, err := client.Users.CreateUser(ctx, req)
+	if err != nil {
+		log.Fatalf("failed to create a new user %v", err)
+	}
 
-To delete a user:
-```go
-err = client.Users.DeleteUser(ctx, *userResp.Id)
-```
+	usersResp, err := client.Users.ListAll(ctx, &ListOptions{})
+	if err != nil {
+		log.Fatalf("failed to list all users %v", err)
+	}
+	log.Printf("%d users found\n", len(usersResp.Users))
 
-To list all users:
-```go
-usersResp, err := client.Users.ListAll(ctx, &msgraph.UserListOptions{})
-```
+	user, err := client.Users.GetUser(ctx, *userResp.Id, nil)
+	if err != nil {
+		log.Fatalf("failed to get user by ID %v", err)
+	}
 
-To list users with pagination:
-```go
-opts := &msgraph.UserListOptions{
-    Top: 1,
-}
-var allUsers []*models.User
-for {
-    usersResp, err := client.Users.ListAll(ctx, opts)
-    allUsers = append(allUsers, usersResp.Users...)
-    if usersResp.NextLink == nil {
-        break
-    }
-    opts.NextLink = *usersResp.NextLink
+	log.Printf("user: %+v, %+v", user.Id, user.DisplayName)
 }
 ```
 

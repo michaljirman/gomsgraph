@@ -1,6 +1,6 @@
 // +build integration
 
-package v1
+package integration
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
-	"github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph"
+	. "github.com/michaljirman/gomsgraph/msgraph/beta/models"
 )
 
 func TestDirectoryRoles(t *testing.T) {
@@ -28,15 +28,18 @@ func TestDirectoryRoles(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, dirRoleResp)
 
-	req := &models.Group{
-		Description: core.String("Self help community for library"),
-		DisplayName: core.String("Library Assist"),
+	req := &Group{
+		Description: msgraph.String("Self help community for library"),
+		DisplayName: msgraph.String("Library Assist"),
 		GroupTypes: &[]string{
 			"Unified",
 		},
-		MailEnabled:     core.Bool(true),
-		MailNickname:    core.String("library"),
-		SecurityEnabled: core.Bool(false),
+		MailEnabled:     msgraph.Bool(true),
+		MailNickname:    msgraph.String("library"),
+		SecurityEnabled: msgraph.Bool(true),
+		// set IsAssignableToRole to allow roles assignment to a newly created group
+		IsAssignableToRole: msgraph.Bool(true),
+		Visibility:         msgraph.String("Private"),
 	}
 	groupResp, err := client.Groups.CreateGroup(ctx, req)
 	require.NoError(t, err)
@@ -47,4 +50,8 @@ func TestDirectoryRoles(t *testing.T) {
 		err = client.Groups.DeleteGroup(ctx, *groupResp.Id)
 		require.NoError(t, err)
 	}()
+
+	// Assign a directory role to a group
+	err = client.DirectoryRoles.AddMember(ctx, dirRoleID, *groupResp.Id)
+	require.NoError(t, err)
 }

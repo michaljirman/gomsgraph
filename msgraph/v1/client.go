@@ -1,10 +1,11 @@
 package v1
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
+	"github.com/michaljirman/gomsgraph/msgraph"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 
 // A Client manages communication with the MS Graph API.
 type Client struct {
-	core.BaseClient
+	msgraph.BaseClient
 
 	// Reuse a single struct instead of allocating one for each service on the heap.
 	common service
@@ -46,4 +47,9 @@ func NewClient(httpClient *http.Client) *Client {
 	c.DirectoryRoleTemplates = (*DirectoryRoleTemplatesService)(&c.common)
 	c.SchemaExtensions = (*SchemaExtensionsService)(&c.common)
 	return c
+}
+
+// NewDefaultClient creates a new client with default configuration for MS Graph V1 API
+func NewDefaultClient(ctx context.Context) *Client {
+	return NewClient(msgraph.NewOAuth2ClientFromEnvsOrFail(ctx))
 }

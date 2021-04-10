@@ -1,6 +1,6 @@
 // +build integration
 
-package v1
+package integration
 
 import (
 	"context"
@@ -9,23 +9,22 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
-	msgraph "github.com/michaljirman/gomsgraph/msgraph/v1"
-	"github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph"
+	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
 )
 
 func TestGroups(t *testing.T) {
 	// create a group
 	ctx := context.Background()
-	req := &models.Group{
-		Description: core.String("Self help community for library"),
-		DisplayName: core.String("Library Assist"),
+	req := Group{
+		Description: msgraph.String("Self help community for library"),
+		DisplayName: msgraph.String("Library Assist"),
 		GroupTypes: &[]string{
 			"Unified",
 		},
-		MailEnabled:     core.Bool(true),
-		MailNickname:    core.String("library"),
-		SecurityEnabled: core.Bool(false),
+		MailEnabled:     msgraph.Bool(true),
+		MailNickname:    msgraph.String("library"),
+		SecurityEnabled: msgraph.Bool(false),
 	}
 	groupResp, err := client.Groups.CreateGroup(ctx, req)
 	require.NoError(t, err)
@@ -39,7 +38,7 @@ func TestGroups(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		// list all groups
-		groupsResp, err := client.Groups.ListAll(ctx, &msgraph.GroupListOptions{})
+		groupsResp, err := client.Groups.ListAll(ctx, &ListOptions{})
 		if err != nil {
 			return false
 		}
@@ -49,7 +48,7 @@ func TestGroups(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		// list all groups matching filter
-		groupsResp, err := client.Groups.ListAll(ctx, &msgraph.GroupListOptions{
+		groupsResp, err := client.Groups.ListAll(ctx, &ListOptions{
 			Filter: "startswith(displayName,'Library')",
 		})
 		if err != nil {

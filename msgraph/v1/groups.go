@@ -2,35 +2,27 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
-	"github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph"
+	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
 )
 
 type GroupsService service
 
-type GroupListOptions struct {
-	Filter string `url:"$filter,omitempty"`
-	Select string `url:"$select,omitempty"`
-	Top    int    `url:"$top,omitempty"`
-}
-
 type GroupsResponse struct {
-	models.OData
-	Groups []*models.Group `json:"value"`
+	OData
+	Groups []*Group `json:"value"`
 }
 
-// List all the groups in an organization, including but not limited to Microsoft 365 groups.
+// ListAll lists all the groups in an organization, including but not limited to Microsoft 365 groups.
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-list?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) ListAll(ctx context.Context, opts *GroupListOptions) (*GroupsResponse, error) {
-	u, err := core.AddOptions("groups", opts)
-	if err != nil {
-		return nil, err
-	}
+func (s *GroupsService) ListAll(ctx context.Context, opts *ListOptions) (*GroupsResponse, error) {
+	u := msgraph.URL(Groups).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -46,22 +38,18 @@ func (s *GroupsService) ListAll(ctx context.Context, opts *GroupListOptions) (*G
 }
 
 type GroupResponse struct {
-	models.OData
-	models.Group
+	OData
+	Group
 }
 
-// Get the properties and relationships of a group object.
+// GetGroup retrieves the properties and relationships of a group object.
 //
 // GET /groups/{id}
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-get?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) GetGroup(ctx context.Context, groupID string, opts *GroupListOptions) (*GroupResponse, error) {
-	u, err := core.AddOptions(fmt.Sprintf("groups/%v", groupID), opts)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *GroupsService) GetGroup(ctx context.Context, groupID string, opts *ListOptions) (*GroupResponse, error) {
+	u := msgraph.URL(Groups, groupID).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -76,14 +64,15 @@ func (s *GroupsService) GetGroup(ctx context.Context, groupID string, opts *Grou
 	return groupResp, nil
 }
 
-// Create a new group as specified in the request body. You can create the following types of groups:
+// CreateGroup creates a new group as specified in the request body. You can create the following types of groups:
 //
 // Microsoft 365 group (unified group)
 // Security group
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-post-groups?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) CreateGroup(ctx context.Context, r *models.Group) (*GroupResponse, error) {
-	req, err := s.client.NewRequest(http.MethodPost, "groups", r)
+func (s *GroupsService) CreateGroup(ctx context.Context, r Group) (*GroupResponse, error) {
+	u := msgraph.URL(Groups).Build()
+	req, err := s.client.NewRequest(http.MethodPost, u, r)
 	if err != nil {
 		return nil, err
 	}
@@ -97,14 +86,19 @@ func (s *GroupsService) CreateGroup(ctx context.Context, r *models.Group) (*Grou
 	return groupResp, nil
 }
 
-// Update the properties of a group object.
+// UpdateGroup updates the properties of a group object.
 //
 // PATCH /groups/{id}
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-update?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) UpdateGroup(ctx context.Context, r *models.Group) error {
-	req, err := s.client.NewRequest(http.MethodPatch, fmt.Sprintf("groups/%v", r.Id), r)
+func (s *GroupsService) UpdateGroup(ctx context.Context, r Group) error {
+	if r.Id == nil {
+		return errors.New("group id is required")
+	}
+
+	u := msgraph.URL(Groups, *r.Id).Build()
+	req, err := s.client.NewRequest(http.MethodPatch, u, r)
 	if err != nil {
 		return err
 	}
@@ -117,7 +111,7 @@ func (s *GroupsService) UpdateGroup(ctx context.Context, r *models.Group) error 
 	return nil
 }
 
-// Delete group.
+// DeleteGroup deletes group.
 //
 // When deleted, Microsoft 365 groups are moved to a temporary container and can be restored within 30 days.
 // After that time, they are permanently deleted. To learn more, see deletedItems. This applies only to Microsoft 365 groups.
@@ -126,7 +120,8 @@ func (s *GroupsService) UpdateGroup(ctx context.Context, r *models.Group) error 
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-delete?view=graph-rest-1.0&tabs=http
 func (s *GroupsService) DeleteGroup(ctx context.Context, groupID string) error {
-	req, err := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("groups/%v", groupID), nil)
+	u := msgraph.URL(Groups, groupID).Build()
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
 		return err
 	}
@@ -139,7 +134,7 @@ func (s *GroupsService) DeleteGroup(ctx context.Context, groupID string) error {
 	return nil
 }
 
-// Get a list of the group's direct members. A group can have users, organizational contacts, devices,
+// ListMembers retrieves a list of the group's direct members. A group can have users, organizational contacts, devices,
 // service principals and other groups as members. Currently service principals are not listed as group members
 // due to staged roll-out of service principals on Graph V1.0 endpoint. This operation is not transitive.
 //
@@ -147,12 +142,8 @@ func (s *GroupsService) DeleteGroup(ctx context.Context, groupID string) error {
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-list-members?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) ListMembers(ctx context.Context, groupID string, opts *GroupListOptions) (*UsersResponse, error) {
-	u, err := core.AddOptions(fmt.Sprintf("groups/%v/members", groupID), opts)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *GroupsService) ListMembers(ctx context.Context, groupID string, opts *ListOptions) (*UsersResponse, error) {
+	u := msgraph.URL(Groups, groupID).Append(Members).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -167,7 +158,7 @@ func (s *GroupsService) ListMembers(ctx context.Context, groupID string, opts *G
 	return usersResp, nil
 }
 
-// Retrieve a list of the group's owners. The owners are a set of users or service principals who are allowed to
+// ListOwners retrieves a list of the group's owners. The owners are a set of users or service principals who are allowed to
 // modify the group object. Owners are currently not available in Microsoft Graph for groups that were created in
 // Exchange or groups that are synchronized from an on-premises environment.
 //
@@ -175,12 +166,8 @@ func (s *GroupsService) ListMembers(ctx context.Context, groupID string, opts *G
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-list-owners?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) ListOwners(ctx context.Context, groupID string, opts *GroupListOptions) (*UsersResponse, error) {
-	u, err := core.AddOptions(fmt.Sprintf("groups/%v/members", groupID), opts)
-	if err != nil {
-		return nil, err
-	}
-
+func (s *GroupsService) ListOwners(ctx context.Context, groupID string, opts *ListOptions) (*UsersResponse, error) {
+	u := msgraph.URL(Groups, groupID).Append(Owners).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -195,7 +182,7 @@ func (s *GroupsService) ListOwners(ctx context.Context, groupID string, opts *Gr
 	return usersResp, nil
 }
 
-// Add a member to a Microsoft 365 group or a security group through the members navigation property.
+// AddMember adds a member to a Microsoft 365 group or a security group through the members navigation property.
 // You can add users, organizational contacts, service principals or other groups.
 //
 // POST /groups/{group-id}/members/$ref
@@ -207,7 +194,8 @@ func (s *GroupsService) AddMember(ctx context.Context, groupID, userID string) e
 		"@odata.id": fmt.Sprintf("%vdirectoryObjects/%v", defaultBaseURL, userID),
 	}
 
-	req, err := s.client.NewRequest(http.MethodPost, fmt.Sprintf("groups/%v/members/$ref", groupID), requestData)
+	u := msgraph.URL(Groups, groupID).Append(Members).Append(Refs).Build()
+	req, err := s.client.NewRequest(http.MethodPost, u, requestData)
 	if err != nil {
 		return err
 	}
@@ -220,7 +208,7 @@ func (s *GroupsService) AddMember(ctx context.Context, groupID, userID string) e
 	return nil
 }
 
-// Add a user or service principal to the group's owners. The owners are a set of users or service principals who are allowed to modify the group object.
+// AddOwner adds a user or service principal to the group's owners. The owners are a set of users or service principals who are allowed to modify the group object.
 //
 // POST /groups/{id}/owners/$ref
 //
@@ -228,10 +216,11 @@ func (s *GroupsService) AddMember(ctx context.Context, groupID, userID string) e
 // https://docs.microsoft.com/en-us/graph/api/group-post-owners?view=graph-rest-1.0&tabs=http
 func (s *GroupsService) AddOwner(ctx context.Context, groupID, userID string) error {
 	requestData := map[string]string{
-		"@odata.id": fmt.Sprintf("%vusers/%v", defaultBaseURL, userID),
+		"@odata.id": msgraph.URL(Users, userID).BuildWithPrefix(defaultBaseURL),
 	}
 
-	req, err := s.client.NewRequest(http.MethodPost, fmt.Sprintf("groups/%v/owners/$ref", groupID), requestData)
+	u := msgraph.URL(Groups, groupID).Append(Owners).Append(Refs).Build()
+	req, err := s.client.NewRequest(http.MethodPost, u, requestData)
 	if err != nil {
 		return err
 	}
@@ -244,14 +233,15 @@ func (s *GroupsService) AddOwner(ctx context.Context, groupID, userID string) er
 	return nil
 }
 
-// Use this API to remove a member from a group via the members navigation property.
+// RemoveMember removes a member from a group via the members navigation property.
 //
 // DELETE /groups/{id}/members/{id}/$ref
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-delete-members?view=graph-rest-1.0&tabs=http
 func (s *GroupsService) RemoveMember(ctx context.Context, groupID, userID string) error {
-	req, err := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("groups/%v/members/%v/$ref", groupID, userID), nil)
+	u := msgraph.URL(Groups, groupID).AppendWithID(Members, userID).Append(Refs).Build()
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
 		return err
 	}
@@ -264,7 +254,7 @@ func (s *GroupsService) RemoveMember(ctx context.Context, groupID, userID string
 	return nil
 }
 
-// Use this API to remove an owner from a Microsoft 365 group, a security group, or a mail-enabled security group
+// RemoveOwner removes an owner from a Microsoft 365 group, a security group, or a mail-enabled security group
 // through the owners navigation property. Once owners are assigned to a group, the last owner of the group cannot be removed.
 //
 // DELETE /groups/{id}/owners/{id}/$ref
@@ -272,7 +262,8 @@ func (s *GroupsService) RemoveMember(ctx context.Context, groupID, userID string
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-delete-owners?view=graph-rest-1.0&tabs=http
 func (s *GroupsService) RemoveOwner(ctx context.Context, groupID, userID string) error {
-	req, err := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("groups/%v/owners/%v/$ref", groupID, userID), nil)
+	u := msgraph.URL(Groups, groupID).AppendWithID(Owners, userID).Append(Refs).Build()
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
 		return err
 	}
@@ -285,23 +276,14 @@ func (s *GroupsService) RemoveOwner(ctx context.Context, groupID, userID string)
 	return nil
 }
 
-type AppRoleAssignmentsResponse struct {
-	models.OData
-	AppRoleAssignments []*models.AppRoleAssignment `json:"value"`
-}
-
-// Retrieve the list of appRoleAssignment that have been granted to a group.
+// ListAppRoleAssignments retrieves the list of appRoleAssignment that have been granted to a group.
 //
 // GET /groups/{id}/appRoleAssignments
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/group-list-owners?view=graph-rest-1.0&tabs=http
-func (s *GroupsService) ListAppRoleAssignments(ctx context.Context, groupID string, opts *GroupListOptions) (*AppRoleAssignmentsResponse, error) {
-	u, err := core.AddOptions(fmt.Sprintf("groups/%v/appRoleAssignments", groupID), opts)
-	if err != nil {
-		return nil, err
-	}
-
+// https://docs.microsoft.com/en-us/graph/api/group-list-approleassignments?view=graph-rest-1.0&tabs=http
+func (s *GroupsService) ListAppRoleAssignments(ctx context.Context, groupID string, opts *ListOptions) (*AppRoleAssignmentsResponse, error) {
+	u := msgraph.URL(Groups, groupID).Append(AppRoleAssignments).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
@@ -316,12 +298,7 @@ func (s *GroupsService) ListAppRoleAssignments(ctx context.Context, groupID stri
 	return appRoleAssignmentsResp, nil
 }
 
-type AppRoleAssignmentResponse struct {
-	models.OData
-	models.AppRoleAssignment
-}
-
-// Use this API to assign an app role to a group. All direct members of the group will be considered assigned.
+// AddAppRoleAssignments assigns an app role to a group. All direct members of the group will be considered assigned.
 // To grant an app role assignment to a group, you need three identifiers:
 //
 // principalId: The id of the group to which you are assigning the app role.
@@ -339,7 +316,8 @@ func (s *GroupsService) AddAppRoleAssignments(ctx context.Context, groupID, prin
 		"appRoleId":   appRoleID,
 	}
 
-	req, err := s.client.NewRequest(http.MethodPost, fmt.Sprintf("groups/%v/appRoleAssignments", groupID), requestData)
+	u := msgraph.URL(Groups, groupID).Append(AppRoleAssignments).Build()
+	req, err := s.client.NewRequest(http.MethodPost, u, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -353,14 +331,15 @@ func (s *GroupsService) AddAppRoleAssignments(ctx context.Context, groupID, prin
 	return appRoleAssignmentResp, nil
 }
 
-// Deletes an appRoleAssignment that a group has been granted.
+// DeleteAppRoleAssignment deletes an appRoleAssignment that a group has been granted.
 //
 // DELETE /groups/{id}/appRoleAssignments/{id}
 //
 // MS Graph API doc:
 // https://docs.microsoft.com/en-us/graph/api/group-delete-approleassignments?view=graph-rest-1.0&tabs=http
 func (s *GroupsService) DeleteAppRoleAssignment(ctx context.Context, groupID, appRoleAssignmentID string) error {
-	req, err := s.client.NewRequest(http.MethodDelete, fmt.Sprintf("groups/%v/appRoleAssignments/%v", groupID, appRoleAssignmentID), nil)
+	u := msgraph.URL(Groups, groupID).AppendWithID(AppRoleAssignments, appRoleAssignmentID).Build()
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
 	if err != nil {
 		return err
 	}

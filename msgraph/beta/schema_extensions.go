@@ -1,4 +1,4 @@
-package v1
+package beta
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/michaljirman/gomsgraph/msgraph"
-	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	. "github.com/michaljirman/gomsgraph/msgraph/beta/models"
 )
 
 type SchemaExtensionsService service
@@ -20,7 +20,7 @@ type SchemaExtensionsResponse struct {
 // (that can be InDevelopment, Available, or Deprecated), and all other schema extensions owned by other apps that are marked as Available.
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/schemaextension-list?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/schemaextension-list?view=graph-rest-beta&tabs=http
 func (s *SchemaExtensionsService) ListAll(ctx context.Context, opts *ListOptions) (*SchemaExtensionsResponse, error) {
 	var u string
 	if opts.NextLink != "" {
@@ -53,7 +53,7 @@ type SchemaExtensionResponse struct {
 // GET /schemaExtensions/{id}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/schemaextension-get?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/schemaextension-get?view=graph-rest-beta&tabs=http
 func (s *SchemaExtensionsService) GetSchemaExtension(ctx context.Context, schemaExtensionID string, opts *ListOptions) (*SchemaExtensionResponse, error) {
 	u := msgraph.URL(SchemaExtensions, schemaExtensionID).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
@@ -73,7 +73,7 @@ func (s *SchemaExtensionsService) GetSchemaExtension(ctx context.Context, schema
 // CreateSchemaExtension creates a new schemaExtension definition to extend a supporting resource type.
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/schemaextension-post-schemaextensions?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/schemaextension-post-schemaextensions?view=graph-rest-beta&tabs=http
 func (s *SchemaExtensionsService) CreateSchemaExtension(ctx context.Context, r SchemaExtension) (*SchemaExtensionResponse, error) {
 	u := msgraph.URL(SchemaExtensions).Build()
 	req, err := s.client.NewRequest(http.MethodPost, u, r)
@@ -99,7 +99,7 @@ func (s *SchemaExtensionsService) CreateSchemaExtension(ctx context.Context, r S
 // DELETE /schemaExtensions/{id}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/schemaextension-delete?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/schemaextension-delete?view=graph-rest-beta&tabs=http
 func (s *SchemaExtensionsService) DeleteSchemaExtension(ctx context.Context, schemaExtensionID string) error {
 	u := msgraph.URL(SchemaExtensions, schemaExtensionID).Build()
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
@@ -127,7 +127,7 @@ func (s *SchemaExtensionsService) DeleteSchemaExtension(ctx context.Context, sch
 // * Extension schema can be deleted only if the status is not set to "Available". (InDevelopment=>Available=>Deprecated)
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/schemaextension-update?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/schemaextension-update?view=graph-rest-beta&tabs=http
 func (s *SchemaExtensionsService) UpdateSchemaExtension(ctx context.Context, r SchemaExtension) error {
 	if r.Id == nil {
 		return errors.New("schema extension id is required")

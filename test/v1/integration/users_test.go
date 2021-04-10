@@ -1,6 +1,6 @@
 // +build integration
 
-package v1
+package integration
 
 import (
 	"context"
@@ -12,24 +12,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
-	"github.com/michaljirman/gomsgraph/msgraph/core"
-	msgraph "github.com/michaljirman/gomsgraph/msgraph/v1"
-	"github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	"github.com/michaljirman/gomsgraph/msgraph"
+	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
 )
 
 func TestUsers(t *testing.T) {
 	// create a user
 	ctx := context.Background()
-	req := &models.User{
-		Id:                core.String(uuid.NewString()),
-		AccountEnabled:    core.Bool(true),
-		DisplayName:       core.String("Test User"),
-		MailNickname:      core.String("TestU"),
-		UserPrincipalName: core.String("TestU@testebworkspace.onmicrosoft.com"),
-		PasswordProfile: &models.PasswordProfile{
-			Password:                             core.String(uuid.NewString()),
-			ForceChangePasswordNextSignIn:        core.Bool(true),
-			ForceChangePasswordNextSignInWithMfa: core.Bool(true),
+	req := User{
+		Id:                msgraph.String(uuid.NewString()),
+		AccountEnabled:    msgraph.Bool(true),
+		DisplayName:       msgraph.String("Test User"),
+		MailNickname:      msgraph.String("TestU"),
+		UserPrincipalName: msgraph.String("TestU@testebworkspace.onmicrosoft.com"),
+		PasswordProfile: &PasswordProfile{
+			Password:                             msgraph.String(uuid.NewString()),
+			ForceChangePasswordNextSignIn:        msgraph.Bool(true),
+			ForceChangePasswordNextSignInWithMfa: msgraph.Bool(true),
 		},
 	}
 	userResp, err := client.Users.CreateUser(ctx, req)
@@ -44,7 +43,7 @@ func TestUsers(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		// list all users
-		usersResp, err := client.Users.ListAll(ctx, &msgraph.UserListOptions{})
+		usersResp, err := client.Users.ListAll(ctx, &ListOptions{})
 		if err != nil {
 			return false
 		}
@@ -54,7 +53,7 @@ func TestUsers(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		// list all users matching filter
-		usersResp, err := client.Users.ListAll(ctx, &msgraph.UserListOptions{
+		usersResp, err := client.Users.ListAll(ctx, &ListOptions{
 			Filter: "startswith(displayName,'Test')",
 		})
 		if err != nil {
@@ -77,16 +76,16 @@ func TestUsersWithPagination(t *testing.T) {
 	requiredNumberOfTestUsers := 5
 	testUserIDs := make([]string, 0, requiredNumberOfTestUsers)
 	for i := 0; i < requiredNumberOfTestUsers; i++ {
-		req := &models.User{
-			Id:                core.String(uuid.NewString()),
-			AccountEnabled:    core.Bool(true),
-			DisplayName:       core.String(fmt.Sprintf("Test User%s", strconv.Itoa(i))),
-			MailNickname:      core.String(fmt.Sprintf("TestU%s", strconv.Itoa(i))),
-			UserPrincipalName: core.String(fmt.Sprintf("TestU%s@testebworkspace.onmicrosoft.com", strconv.Itoa(i))),
-			PasswordProfile: &models.PasswordProfile{
-				Password:                             core.String(uuid.NewString()),
-				ForceChangePasswordNextSignIn:        core.Bool(true),
-				ForceChangePasswordNextSignInWithMfa: core.Bool(true),
+		req := User{
+			Id:                msgraph.String(uuid.NewString()),
+			AccountEnabled:    msgraph.Bool(true),
+			DisplayName:       msgraph.String(fmt.Sprintf("Test User%s", strconv.Itoa(i))),
+			MailNickname:      msgraph.String(fmt.Sprintf("TestU%s", strconv.Itoa(i))),
+			UserPrincipalName: msgraph.String(fmt.Sprintf("TestU%s@testebworkspace.onmicrosoft.com", strconv.Itoa(i))),
+			PasswordProfile: &PasswordProfile{
+				Password:                             msgraph.String(uuid.NewString()),
+				ForceChangePasswordNextSignIn:        msgraph.Bool(true),
+				ForceChangePasswordNextSignInWithMfa: msgraph.Bool(true),
 			},
 		}
 		userResp, err := client.Users.CreateUser(ctx, req)
@@ -104,10 +103,10 @@ func TestUsersWithPagination(t *testing.T) {
 	}()
 
 	// list all users
-	opts := &msgraph.UserListOptions{
+	opts := &ListOptions{
 		Top: 1,
 	}
-	var allUsers []*models.User
+	var allUsers []*User
 	for {
 		usersResp, err := client.Users.ListAll(ctx, opts)
 		require.NoError(t, err)

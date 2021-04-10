@@ -1,2 +1,2 @@
-// Package gomsgraph is the Microsoft Graph API v1 client for Go.
+// Package gomsgraph is the Microsoft Graph API client for Go.
 package msgraph

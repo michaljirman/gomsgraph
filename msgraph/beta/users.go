@@ -1,4 +1,4 @@
-package v1
+package beta
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/michaljirman/gomsgraph/msgraph"
-	. "github.com/michaljirman/gomsgraph/msgraph/v1/models"
+	. "github.com/michaljirman/gomsgraph/msgraph/beta/models"
 )
 
 type UsersService service
@@ -20,7 +20,7 @@ type UsersResponse struct {
 // ListAll retrieves a list of user objects.
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-list?view=graph-rest-beta&tabs=http
 func (s *UsersService) ListAll(ctx context.Context, opts *ListOptions) (*UsersResponse, error) {
 	var u string
 	if opts.NextLink != "" {
@@ -69,7 +69,7 @@ func (u *UserResponse) UnmarshalJSON(data []byte) error {
 // GET /users/{id | userPrincipalName}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-get?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-get?view=graph-rest-beta&tabs=http
 func (s *UsersService) GetUser(ctx context.Context, userID string, opts *ListOptions) (*UserResponse, error) {
 	u := msgraph.URL(Users, userID).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
@@ -90,8 +90,8 @@ func (s *UsersService) GetUser(ctx context.Context, userID string, opts *ListOpt
 // At a minimum, you must specify the required properties for the user. You can optionally specify any other writable properties.
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-post-users?view=graph-rest-1.0&tabs=http
-func (s *UsersService) CreateUser(ctx context.Context, r User) (*UserResponse, error) {
+// https://docs.microsoft.com/en-us/graph/api/user-post-users?view=graph-rest-beta&tabs=http
+func (s *UsersService) CreateUser(ctx context.Context, r *User) (*UserResponse, error) {
 	u := msgraph.URL(Users).Build()
 	req, err := s.client.NewRequest(http.MethodPost, u, r)
 	if err != nil {
@@ -113,7 +113,7 @@ func (s *UsersService) CreateUser(ctx context.Context, r User) (*UserResponse, e
 // PATCH /users/{id | userPrincipalName}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-beta&tabs=http
 func (s *UsersService) UpdateUser(ctx context.Context, usr User) error {
 	if usr.Id == nil {
 		return errors.New("user id is required")
@@ -139,7 +139,7 @@ func (s *UsersService) UpdateUser(ctx context.Context, usr User) error {
 // DELETE /users/{id | userPrincipalName}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-delete?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-delete?view=graph-rest-beta&tabs=http
 func (s *UsersService) DeleteUser(ctx context.Context, userID string) error {
 	u := msgraph.URL(Users, userID).Build()
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
@@ -168,7 +168,7 @@ func (s *UsersService) DeleteUser(ctx context.Context, userID string) error {
 // * Extension schema can be deleted only if the status is not set to "Available". (InDevelopment=>Available=>Deprecated)
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-update?view=graph-rest-beta&tabs=http
 func (s *UsersService) UpdateSchemaExtensions(ctx context.Context, userID, schemaExtensionID string, schemaExtensionData map[string]string) error {
 	schemaExtensionDataReq := &SchemaExtensionRawDataType{
 		schemaExtensionID: schemaExtensionData,
@@ -193,7 +193,7 @@ func (s *UsersService) UpdateSchemaExtensions(ctx context.Context, userID, schem
 // GET /users/{id | userPrincipalName}/appRoleAssignments
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/user-list-approleassignments?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/user-list-approleassignments?view=graph-rest-beta&tabs=http
 func (s *UsersService) ListAppRoleAssignments(ctx context.Context, userID string, opts *ListOptions) (*AppRoleAssignmentsResponse, error) {
 	u := msgraph.URL(Users, userID).Append(AppRoleAssignments).Options(opts).Build()
 	req, err := s.client.NewRequest(http.MethodGet, u, nil)
@@ -219,7 +219,7 @@ func (s *UsersService) ListAppRoleAssignments(ctx context.Context, userID string
 // POST /users/{id | userPrincipalName}/appRoleAssignments
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/group-post-approleassignments?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/group-post-approleassignments?view=graph-rest-beta&tabs=http
 func (s *UsersService) AddAppRoleAssignments(ctx context.Context, userID, principalID, resourceID, appRoleID string) (*AppRoleAssignmentResponse, error) {
 	requestData := map[string]string{
 		"principalId": principalID,
@@ -247,7 +247,7 @@ func (s *UsersService) AddAppRoleAssignments(ctx context.Context, userID, princi
 // DELETE /groups/{id}/appRoleAssignments/{id}
 //
 // MS Graph API doc:
-// https://docs.microsoft.com/en-us/graph/api/group-delete-approleassignments?view=graph-rest-1.0&tabs=http
+// https://docs.microsoft.com/en-us/graph/api/group-delete-approleassignments?view=graph-rest-beta&tabs=http
 func (s *UsersService) DeleteAppRoleAssignment(ctx context.Context, userID, appRoleAssignmentID string) error {
 	u := msgraph.URL(Users, userID).AppendWithID(AppRoleAssignments, appRoleAssignmentID).Build()
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil)
