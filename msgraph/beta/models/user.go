@@ -2,21 +2,19 @@ package models
 
 import "time"
 
-// User struct for MicrosoftGraphUser
 type User struct {
-	// Read-only.
 	Id              *string    `json:"id,omitempty"`
 	DeletedDateTime *time.Time `json:"deletedDateTime,omitempty"`
 	// Get the last signed-in date and request ID of the sign-in for a given user.Supports $filter, but not with any other filterable properties. Returned only on $select. Read-only. Note: Details for this property require an Azure AD Premium P1/P2 license.
-	//SignInActivity *SignInActivity `json:"signInActivity,omitempty"`
+	SignInActivity *SignInActivity `json:"signInActivity,omitempty"`
 	// true if the account is enabled; otherwise, false. This property is required when a user is created. Returned only on $select. Supports $filter.
 	AccountEnabled *bool `json:"accountEnabled,omitempty"`
 	// Sets the age group of the user. Allowed values: null, minor, notAdult and adult. Refer to the legal age group property definitions for further information. Returned only on $select.
 	AgeGroup *string `json:"ageGroup,omitempty"`
 	// The licenses that are assigned to the user. Not nullable. Supports $filter.
-	//AssignedLicenses *[]MicrosoftGraphAssignedLicense `json:"assignedLicenses,omitempty"`
+	AssignedLicenses *[]AssignedLicense `json:"assignedLicenses,omitempty"`
 	// The plans that are assigned to the user. Returned only on $select. Read-only. Not nullable.
-	//AssignedPlans *[]MicrosoftGraphAssignedPlan `json:"assignedPlans,omitempty"`
+	AssignedPlans *[]AssignedPlan `json:"assignedPlans,omitempty"`
 	// The telephone numbers for the user. Only one number can be set for this property. Returned by default. Read-only for users synced from on-premises directory.
 	BusinessPhones *[]string `json:"businessPhones,omitempty"`
 	// The city in which the user is located. Returned only on $select. Supports $filter.
@@ -32,8 +30,8 @@ type User struct {
 	// Indicates whether the user account was created as a regular school or work account (null), an external account (Invitation), a local account for an Azure Active Directory B2C tenant (LocalAccount) or self-service sign-up using email verification (EmailVerified). Returned only on $select. Read-only.
 	CreationType *string `json:"creationType,omitempty"`
 	// The name for the department in which the user works. Returned only on $select. Supports $filter.
-	Department *string `json:"department,omitempty"`
-	//DeviceKeys *[]MicrosoftGraphDeviceKey `json:"deviceKeys,omitempty"`
+	Department *string      `json:"department,omitempty"`
+	DeviceKeys *[]DeviceKey `json:"deviceKeys,omitempty"`
 	// The name displayed in the address book for the user. This value is usually the combination of the user's first name, middle initial, and last name. This property is required when a user is created and it cannot be cleared during updates. Returned by default. Supports $filter and $orderby.
 	DisplayName *string `json:"displayName,omitempty"`
 	// The date and time when the user was hired or will start work in case of a future hire. Returned only on $select. Supports $filter.
@@ -41,7 +39,7 @@ type User struct {
 	// The employee identifier assigned to the user by the organization. Returned only on $select. Supports $filter.
 	EmployeeId *string `json:"employeeId,omitempty"`
 	// Represents organization data (e.g. division and costCenter) associated with a user. Returned only on $select.
-	//EmployeeOrgData *EmployeeOrgData `json:"employeeOrgData,omitempty"`
+	EmployeeOrgData *EmployeeOrgData `json:"employeeOrgData,omitempty"`
 	// Captures enterprise worker type: Employee, Contractor, Consultant, Vendor, etc. Returned only on $select. Supports $filter.
 	EmployeeType *string `json:"employeeType,omitempty"`
 	// For an external user invited to the tenant using the invitation API, this property represents the invited user's invitation status. For invited users, the state can be PendingAcceptance or Accepted, or null for all other users. Returned only on $select. Supports $filter with the supported values. For example: $filter=externalUserState eq 'PendingAcceptance'.
@@ -53,7 +51,7 @@ type User struct {
 	// The given name (first name) of the user. Returned by default. Supports $filter.
 	GivenName *string `json:"givenName,omitempty"`
 	// Represents the identities that can be used to sign in to this user account. An identity can be provided by Microsoft (also known as a local account), by organizations, or by social identity providers such as Facebook, Google, and Microsoft, and tied to a user account. May contain multiple items with the same signInType value. Returned only on $select. Supports $filter.
-	//Identities *[]ObjectIdentity `json:"identities,omitempty"`
+	Identities *[]ObjectIdentity `json:"identities,omitempty"`
 	// The instant message voice over IP (VOIP) session initiation protocol (SIP) addresses for the user. Read-only.
 	ImAddresses *[]string `json:"imAddresses,omitempty"`
 	// Identifies the info segments assigned to the user. Returned by default.
@@ -67,7 +65,7 @@ type User struct {
 	// Used by enterprise applications to determine the legal age group of the user. This property is read-only and calculated based on ageGroup and consentProvidedForMinor properties. Allowed values: null, minorWithOutParentalConsent, minorWithParentalConsent, minorNoParentalConsentRequired, notAdult and adult. Refer to the legal age group property definitions for further information. Returned only on $select.
 	LegalAgeGroupClassification *string `json:"legalAgeGroupClassification,omitempty"`
 	// State of license assignments for this user. Returned only on $select. Read-only.
-	//LicenseAssignmentStates *[]LicenseAssignmentState `json:"licenseAssignmentStates,omitempty"`
+	LicenseAssignmentStates *[]LicenseAssignmentState `json:"licenseAssignmentStates,omitempty"`
 	// The SMTP address for the user, for example, 'jeff@contoso.onmicrosoft.com'. Returned by default. Supports $filter and endsWith.
 	Mail *string `json:"mail,omitempty"`
 	// The mail alias for the user. This property must be specified when a user is created. Returned only on $select. Supports $filter.
@@ -81,13 +79,13 @@ type User struct {
 	// Contains the on-premises domainFQDN, also called dnsDomainName synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises directory to Azure Active Directory via Azure AD Connect. Returned only on $select. Read-only.
 	OnPremisesDomainName *string `json:"onPremisesDomainName,omitempty"`
 	// Contains extensionAttributes 1-15 for the user. Note that the individual extension attributes are neither selectable nor filterable. For an onPremisesSyncEnabled user, the source of authority for this set of properties is the on-premises and is read-only and is read-only. For a cloud-only user (where onPremisesSyncEnabled is false), these properties may be set during creation or update. These extension attributes are also known as Exchange custom attributes 1-15. Returned only on $select.
-	//OnPremisesExtensionAttributes *OnPremisesExtensionAttributes `json:"onPremisesExtensionAttributes,omitempty"`
+	OnPremisesExtensionAttributes *OnPremisesExtensionAttributes `json:"onPremisesExtensionAttributes,omitempty"`
 	// This property is used to associate an on-premises Active Directory user account to their Azure AD user object. This property must be specified when creating a new user account in the Graph if you are using a federated domain for the user's userPrincipalName (UPN) property. Important: The $ and _ characters cannot be used when specifying this property. Returned only on $select. Supports $filter.
 	OnPremisesImmutableId *string `json:"onPremisesImmutableId,omitempty"`
 	// Indicates the last time at which the object was synced with the on-premises directory; for example: '2013-02-16T03:04:54Z'. The Timestamp type represents date and time information using ISO 8601 format and is always in UTC time. For example, midnight UTC on Jan 1, 2014 is 2014-01-01T00:00:00Z. Returned only on $select. Read-only.
 	OnPremisesLastSyncDateTime *time.Time `json:"onPremisesLastSyncDateTime,omitempty"`
 	// Errors when using Microsoft synchronization product during provisioning. Returned only on $select.
-	//OnPremisesProvisioningErrors *[]OnPremisesProvisioningError `json:"onPremisesProvisioningErrors,omitempty"`
+	OnPremisesProvisioningErrors *[]OnPremisesProvisioningError `json:"onPremisesProvisioningErrors,omitempty"`
 	// Contains the on-premises sAMAccountName synchronized from the on-premises directory. The property is only populated for customers who are synchronizing their on-premises directory to Azure Active Directory via Azure AD Connect. Returned only on $select. Read-only.
 	OnPremisesSamAccountName *string `json:"onPremisesSamAccountName,omitempty"`
 	// Contains the on-premises security identifier (SID) for the user that was synchronized from on-premises to the cloud. Returned only on $select. Read-only.
@@ -109,7 +107,7 @@ type User struct {
 	// The preferred language for the user. Should follow ISO 639-1 Code; for example 'en-US'. Returned by default.
 	PreferredLanguage *string `json:"preferredLanguage,omitempty"`
 	// The plans that are provisioned for the user. Returned only on $select. Read-only. Not nullable.
-	//ProvisionedPlans *[]ProvisionedPlan `json:"provisionedPlans,omitempty"`
+	ProvisionedPlans *[]ProvisionedPlan `json:"provisionedPlans,omitempty"`
 	// For example: ['SMTP: bob@contoso.com', 'smtp: bob@sales.contoso.com'] The any operator is required for filter expressions on multi-valued properties. Returned only on $select. Read-only, Not nullable. Supports $filter.
 	ProxyAddresses *[]string `json:"proxyAddresses,omitempty"`
 	// Any refresh tokens or sessions tokens (session cookies) issued before this time are invalid, and applications will get an error when using an invalid refresh or sessions token to acquire a delegated access token (to access APIs such as Microsoft Graph).  If this happens, the application will need to acquire a new refresh token by making a request to the authorize endpoint. Returned only on $select. Read-only. Use invalidateAllRefreshTokens to reset.
@@ -131,7 +129,7 @@ type User struct {
 	// A string value that can be used to classify user types in your directory, such as 'Member' and 'Guest'. Returned only on $select. Supports $filter.
 	UserType *string `json:"userType,omitempty"`
 	// Settings for the primary mailbox of the signed-in user. You can get or update settings for sending automatic replies to incoming messages, locale, and time zone. Returned only on $select.
-	//MailboxSettings *MailboxSettings `json:"mailboxSettings,omitempty"`
+	MailboxSettings *MailboxSettings `json:"mailboxSettings,omitempty"`
 	// The limit on the maximum number of devices that the user is permitted to enroll. Allowed values are 5 or 1000.
 	DeviceEnrollmentLimit *int32 `json:"deviceEnrollmentLimit,omitempty"`
 	// A freeform text entry field for the user to describe themselves. Returned only on $select.
@@ -153,71 +151,71 @@ type User struct {
 	// A list for the user to enumerate the schools they have attended. Returned only on $select.
 	Schools *[]string `json:"schools,omitempty"`
 	// A list for the user to enumerate their skills. Returned only on $select.
-	Skills *[]string `json:"skills,omitempty"`
-	//Analytics             *UserAnalytics              `json:"analytics,omitempty"`
-	//UsageRights           *[]MicrosoftGraphUsageRight `json:"usageRights,omitempty"`
-	//InformationProtection *InformationProtection      `json:"informationProtection,omitempty"`
-	//// Represents the app roles a user has been granted for an application.
-	//AppRoleAssignments *[]MicrosoftGraphAppRoleAssignment `json:"appRoleAssignments,omitempty"`
-	//// Directory objects that were created by the user. Read-only. Nullable.
-	//CreatedObjects *[]MicrosoftGraphDirectoryObject `json:"createdObjects,omitempty"`
-	//// The users and contacts that report to the user. (The users and contacts that have their manager property set to this user.) Read-only. Nullable.
-	//DirectReports *[]MicrosoftGraphDirectoryObject `json:"directReports,omitempty"`
-	//// A collection of this user's license details. Read-only.
-	//LicenseDetails *[]LicenseDetails `json:"licenseDetails,omitempty"`
-	//// The user or contact that is this user's manager. Read-only. (HTTP Methods: GET, PUT, DELETE.)
-	//Manager *DirectoryObject `json:"manager,omitempty"`
-	//// The groups, directory roles and administrative units that the user is a member of. Read-only. Nullable.
-	//MemberOf               *[]DirectoryObject       `json:"memberOf,omitempty"`
-	//Oauth2PermissionGrants *[]OAuth2PermissionGrant `json:"oauth2PermissionGrants,omitempty"`
-	//// Devices that are owned by the user. Read-only. Nullable.
-	//OwnedDevices *[]DirectoryObject `json:"ownedDevices,omitempty"`
-	//// Directory objects that are owned by the user. Read-only. Nullable.
-	//OwnedObjects *[]DirectoryObject `json:"ownedObjects,omitempty"`
-	//// Devices that are registered for the user. Read-only. Nullable.
-	//RegisteredDevices *[]DirectoryObject `json:"registeredDevices,omitempty"`
-	//// The scoped-role administrative unit memberships for this user. Read-only. Nullable.
-	//ScopedRoleMemberOf *[]ScopedRoleMembership `json:"scopedRoleMemberOf,omitempty"`
-	//TransitiveMemberOf *[]DirectoryObject      `json:"transitiveMemberOf,omitempty"`
-	//// The user's primary calendar. Read-only.
-	//Calendar *Calendar `json:"calendar,omitempty"`
-	//// The user's calendar groups. Read-only. Nullable.
-	//CalendarGroups *[]CalendarGroup `json:"calendarGroups,omitempty"`
-	//// The user's calendars. Read-only. Nullable.
-	//Calendars *[]Calendar `json:"calendars,omitempty"`
-	//// The calendar view for the calendar. Read-only. Nullable.
-	//CalendarView *[]Event `json:"calendarView,omitempty"`
-	//// The user's contacts folders. Read-only. Nullable.
-	//ContactFolders *[]ContactFolder `json:"contactFolders,omitempty"`
-	//// The user's contacts. Read-only. Nullable.
-	//Contacts *[]Contact `json:"contacts,omitempty"`
-	//// The user's events. Default is to show events under the Default Calendar. Read-only. Nullable.
-	//Events *[]Event `json:"events,omitempty"`
-	//// Relevance classification of the user's messages based on explicit designations which override inferred relevance or importance.
-	//InferenceClassification *InferenceClassification `json:"inferenceClassification,omitempty"`
-	//// Read-only. Nullable.
-	//JoinedGroups *[]Group `json:"joinedGroups,omitempty"`
-	//// The user's mail folders. Read-only. Nullable.
-	//MailFolders *[]MailFolder `json:"mailFolders,omitempty"`
-	//// The messages in a mailbox or folder. Read-only. Nullable.
-	//Messages *[]Message `json:"messages,omitempty"`
-	//// Selective Outlook services available to the user. Read-only. Nullable.
-	//Outlook *OutlookUser `json:"outlook,omitempty"`
-	//// Read-only. The most relevant people to the user. The collection is ordered by their relevance to the user, which is determined by the user's communication, collaboration and business relationships. A person is an aggregation of information from across mail, contacts and social networks.
-	//People *[]Person `json:"people,omitempty"`
-	//// The user's OneDrive. Read-only.
-	//Drive *Drive `json:"drive,omitempty"`
-	//// A collection of drives available for this user. Read-only.
-	//Drives        *[]Drive `json:"drives,omitempty"`
-	//FollowedSites *[]Site  `json:"followedSites,omitempty"`
-	//// The collection of open extensions defined for the user. Nullable.
-	//Extensions                    *[]Extension         `json:"extensions,omitempty"`
-	//AppConsentRequestsForApproval *[]AppConsentRequest `json:"appConsentRequestsForApproval,omitempty"`
-	//Approvals                     *[]Approval          `json:"approvals,omitempty"`
-	//// Navigation property to get list of access reviews pending approval by reviewer.
-	//PendingAccessReviewInstances *[]AccessReviewInstance `json:"pendingAccessReviewInstances,omitempty"`
-	//// The user's terms of use acceptance statuses. Read-only. Nullable.
-	//AgreementAcceptances *[]AgreementAcceptance `json:"agreementAcceptances,omitempty"`
+	Skills                *[]string              `json:"skills,omitempty"`
+	Analytics             *UserAnalytics         `json:"analytics,omitempty"`
+	UsageRights           *[]UsageRight          `json:"usageRights,omitempty"`
+	InformationProtection *InformationProtection `json:"informationProtection,omitempty"`
+	// Represents the app roles a user has been granted for an application.
+	AppRoleAssignments *[]AppRoleAssignment `json:"appRoleAssignments,omitempty"`
+	// Directory objects that were created by the user. Read-only. Nullable.
+	CreatedObjects *[]DirectoryObject `json:"createdObjects,omitempty"`
+	// The users and contacts that report to the user. (The users and contacts that have their manager property set to this user.) Read-only. Nullable.
+	DirectReports *[]DirectoryObject `json:"directReports,omitempty"`
+	// A collection of this user's license details. Read-only.
+	LicenseDetails *[]LicenseDetails `json:"licenseDetails,omitempty"`
+	// The user or contact that is this user's manager. Read-only. (HTTP Methods: GET, PUT, DELETE.)
+	Manager *DirectoryObject `json:"manager,omitempty"`
+	// The groups, directory roles and administrative units that the user is a member of. Read-only. Nullable.
+	MemberOf               *[]DirectoryObject       `json:"memberOf,omitempty"`
+	Oauth2PermissionGrants *[]OAuth2PermissionGrant `json:"oauth2PermissionGrants,omitempty"`
+	// Devices that are owned by the user. Read-only. Nullable.
+	OwnedDevices *[]DirectoryObject `json:"ownedDevices,omitempty"`
+	// Directory objects that are owned by the user. Read-only. Nullable.
+	OwnedObjects *[]DirectoryObject `json:"ownedObjects,omitempty"`
+	// Devices that are registered for the user. Read-only. Nullable.
+	RegisteredDevices *[]DirectoryObject `json:"registeredDevices,omitempty"`
+	// The scoped-role administrative unit memberships for this user. Read-only. Nullable.
+	ScopedRoleMemberOf *[]ScopedRoleMembership `json:"scopedRoleMemberOf,omitempty"`
+	TransitiveMemberOf *[]DirectoryObject      `json:"transitiveMemberOf,omitempty"`
+	// The user's primary calendar. Read-only.
+	Calendar *Calendar `json:"calendar,omitempty"`
+	// The user's calendar groups. Read-only. Nullable.
+	CalendarGroups *[]CalendarGroup `json:"calendarGroups,omitempty"`
+	// The user's calendars. Read-only. Nullable.
+	Calendars *[]Calendar `json:"calendars,omitempty"`
+	// The calendar view for the calendar. Read-only. Nullable.
+	CalendarView *[]Event `json:"calendarView,omitempty"`
+	// The user's contacts folders. Read-only. Nullable.
+	ContactFolders *[]ContactFolder `json:"contactFolders,omitempty"`
+	// The user's contacts. Read-only. Nullable.
+	Contacts *[]Contact `json:"contacts,omitempty"`
+	// The user's events. Default is to show events under the Default Calendar. Read-only. Nullable.
+	Events *[]Event `json:"events,omitempty"`
+	// Relevance classification of the user's messages based on explicit designations which override inferred relevance or importance.
+	InferenceClassification *InferenceClassification `json:"inferenceClassification,omitempty"`
+	// Read-only. Nullable.
+	JoinedGroups *[]Group `json:"joinedGroups,omitempty"`
+	// The user's mail folders. Read-only. Nullable.
+	MailFolders *[]MailFolder `json:"mailFolders,omitempty"`
+	// The messages in a mailbox or folder. Read-only. Nullable.
+	Messages *[]Message `json:"messages,omitempty"`
+	// Selective Outlook services available to the user. Read-only. Nullable.
+	Outlook *OutlookUser `json:"outlook,omitempty"`
+	// Read-only. The most relevant people to the user. The collection is ordered by their relevance to the user, which is determined by the user's communication, collaboration and business relationships. A person is an aggregation of information from across mail, contacts and social networks.
+	People *[]Person `json:"people,omitempty"`
+	// The user's OneDrive. Read-only.
+	Drive *Drive `json:"drive,omitempty"`
+	// A collection of drives available for this user. Read-only.
+	Drives        *[]Drive `json:"drives,omitempty"`
+	FollowedSites *[]Site  `json:"followedSites,omitempty"`
+	// The collection of open extensions defined for the user. Nullable.
+	Extensions                    *[]Extension         `json:"extensions,omitempty"`
+	AppConsentRequestsForApproval *[]AppConsentRequest `json:"appConsentRequestsForApproval,omitempty"`
+	Approvals                     *[]Approval          `json:"approvals,omitempty"`
+	// Navigation property to get list of access reviews pending approval by reviewer.
+	PendingAccessReviewInstances *[]AccessReviewInstance `json:"pendingAccessReviewInstances,omitempty"`
+	// The user's terms of use acceptance statuses. Read-only. Nullable.
+	AgreementAcceptances *[]AgreementAcceptance `json:"agreementAcceptances,omitempty"`
 	//// Get enrollment configurations targeted to the user
 	//DeviceEnrollmentConfigurations *[]DeviceEnrollmentConfiguration `json:"deviceEnrollmentConfigurations,omitempty"`
 	//// The managed devices associated with the user.

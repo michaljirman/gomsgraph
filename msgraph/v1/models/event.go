@@ -6,9 +6,7 @@ import (
 	"time"
 )
 
-// Event struct for Event
 type Event struct {
-	// Read-only.
 	Id *string `json:"id,omitempty"`
 	// The categories associated with the item
 	Categories *[]string `json:"categories,omitempty"`
@@ -104,7 +102,6 @@ type Event struct {
 	SingleValueExtendedProperties *[]SingleValueLegacyExtendedProperty `json:"singleValueExtendedProperties,omitempty"`
 }
 
-// Attendee struct for Attendee
 type Attendee struct {
 	// The recipient's email address.
 	EmailAddress *EmailAddress `json:"emailAddress,omitempty"`
@@ -116,7 +113,6 @@ type Attendee struct {
 	Status *ResponseStatus `json:"status,omitempty"`
 }
 
-// ItemBody struct for ItemBody
 type ItemBody struct {
 	// The content of the item.
 	Content *string `json:"content,omitempty"`
@@ -124,7 +120,6 @@ type ItemBody struct {
 	ContentType *BodyType `json:"contentType,omitempty"`
 }
 
-// Location struct for Location
 type Location struct {
 	// The street address of the location.
 	Address *PhysicalAddress `json:"address,omitempty"`
@@ -144,7 +139,6 @@ type Location struct {
 	UniqueIdType *LocationUniqueIdType `json:"uniqueIdType,omitempty"`
 }
 
-// OnlineMeetingInfo struct for OnlineMeetingInfo
 type OnlineMeetingInfo struct {
 	// The ID of the conference.
 	ConferenceId *string `json:"conferenceId,omitempty"`
@@ -160,7 +154,6 @@ type OnlineMeetingInfo struct {
 	TollNumber *string `json:"tollNumber,omitempty"`
 }
 
-// ResponseStatus struct for ResponseStatus
 type ResponseStatus struct {
 	// The response type. The possible values are: None, Organizer, TentativelyAccepted, Accepted, Declined, NotResponded.
 	Response *ResponseType `json:"response,omitempty"`
@@ -168,10 +161,8 @@ type ResponseStatus struct {
 	Time *time.Time `json:"time,omitempty"`
 }
 
-// FreeBusyStatus the model 'FreeBusyStatus'
 type FreeBusyStatus string
 
-// List of microsoft.graph.freeBusyStatus
 const (
 	FreeBusyStatus_UNKNOWN           FreeBusyStatus = "unknown"
 	FreeBusyStatus_FREE              FreeBusyStatus = "free"
@@ -198,10 +189,8 @@ func (v *FreeBusyStatus) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid FreeBusyStatus", value)
 }
 
-// EventType the model 'EventType'
 type EventType string
 
-// List of microsoft.graph.eventType
 const (
 	EventType_SINGLE_INSTANCE EventType = "singleInstance"
 	EventType_OCCURRENCE      EventType = "occurrence"
@@ -226,9 +215,7 @@ func (v *EventType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid EventType", value)
 }
 
-// Attachment struct for Attachment
 type Attachment struct {
-	// Read-only.
 	Id *string `json:"id,omitempty"`
 	// The MIME type.
 	ContentType *string `json:"contentType,omitempty"`
@@ -242,10 +229,8 @@ type Attachment struct {
 	Size *int32 `json:"size,omitempty"`
 }
 
-// AttendeeType the model 'AttendeeType'
 type AttendeeType string
 
-// List of microsoft.graph.attendeeType
 const (
 	AttendeeType_REQUIRED AttendeeType = "required"
 	AttendeeType_OPTIONAL AttendeeType = "optional"
@@ -269,16 +254,13 @@ func (v *AttendeeType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid AttendeeType", value)
 }
 
-// TimeSlot struct for TimeSlot
 type TimeSlot struct {
 	End   *DateTimeTimeZone `json:"end,omitempty"`
 	Start *DateTimeTimeZone `json:"start,omitempty"`
 }
 
-// BodyType the model 'BodyType'
 type BodyType string
 
-// List of microsoft.graph.bodyType
 const (
 	BodyType_TEXT BodyType = "text"
 	BodyType_HTML BodyType = "html"
@@ -301,7 +283,6 @@ func (v *BodyType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid BodyType", value)
 }
 
-// OutlookGeoCoordinates struct for OutlookGeoCoordinates
 type OutlookGeoCoordinates struct {
 	// The accuracy of the latitude and longitude. As an example, the accuracy can be measured in meters, such as the latitude and longitude are accurate to within 50 meters.
 	Accuracy *float32 `json:"accuracy,omitempty"`
@@ -315,10 +296,8 @@ type OutlookGeoCoordinates struct {
 	Longitude *float32 `json:"longitude,omitempty"`
 }
 
-// ResponseType the model 'ResponseType'
 type ResponseType string
 
-// List of microsoft.graph.responseType
 const (
 	ResponseType_NONE                 ResponseType = "none"
 	ResponseType_ORGANIZER            ResponseType = "organizer"
@@ -345,10 +324,8 @@ func (v *ResponseType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid ResponseType", value)
 }
 
-// LocationType the model 'LocationType'
 type LocationType string
 
-// List of microsoft.graph.locationType
 const (
 	LocationType_DEFAULT          LocationType = "default"
 	LocationType_CONFERENCE_ROOM  LocationType = "conferenceRoom"
@@ -379,10 +356,8 @@ func (v *LocationType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid LocationType", value)
 }
 
-// LocationUniqueIdType the model 'LocationUniqueIdType'
 type LocationUniqueIdType string
 
-// List of microsoft.graph.locationUniqueIdType
 const (
 	LocationUniqueIdType_UNKNOWN        LocationUniqueIdType = "unknown"
 	LocationUniqueIdType_LOCATION_STORE LocationUniqueIdType = "locationStore"
@@ -408,10 +383,8 @@ func (v *LocationUniqueIdType) UnmarshalJSON(src []byte) error {
 	return fmt.Errorf("%+v is not a valid LocationUniqueIdType", value)
 }
 
-// PhoneType the model 'PhoneType'
 type PhoneType string
 
-// List of microsoft.graph.phoneType
 const (
 	PhoneType_HOME         PhoneType = "home"
 	PhoneType_BUSINESS     PhoneType = "business"

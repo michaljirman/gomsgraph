@@ -5,10 +5,8 @@ import (
 	"fmt"
 )
 
-// WellknownListName the model 'WellknownListName'
 type WellknownListName string
 
-// List of microsoft.graph.wellknownListName
 const (
 	WELLKNOWNLISTNAME_NONE                 WellknownListName = "none"
 	WELLKNOWNLISTNAME_DEFAULT_LIST         WellknownListName = "defaultList"

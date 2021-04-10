@@ -1,8 +1,6 @@
 package models
 
-// OAuth2PermissionGrant struct for OAuth2PermissionGrant
 type OAuth2PermissionGrant struct {
-	// Read-only.
 	Id *string `json:"id,omitempty"`
 	// The id of the client service principal for the application which is authorized to act on behalf of a signed-in user when accessing an API. Required. Supports $filter (eq only).
 	ClientId *string `json:"clientId,omitempty"`

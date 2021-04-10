@@ -1,8 +1,6 @@
 package models
 
-// Calendar struct for Calendar
 type Calendar struct {
-	// Read-only.
 	Id *string `json:"id,omitempty"`
 	// Represent the online meeting service providers that can be used to create online meetings in this calendar. Possible values are: unknown, skypeForBusiness, skypeForConsumer, teamsForBusiness.
 	AllowedOnlineMeetingProviders *[]OnlineMeetingProviderType `json:"allowedOnlineMeetingProviders,omitempty"`

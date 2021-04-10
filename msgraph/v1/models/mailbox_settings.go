@@ -1,6 +1,5 @@
 package models
 
-// MailboxSettings struct for MailboxSettings
 type MailboxSettings struct {
 	// Folder ID of an archive folder for the user.
 	ArchiveFolder *string `json:"archiveFolder,omitempty"`

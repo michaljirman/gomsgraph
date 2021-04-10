@@ -119,7 +119,7 @@ using a [goreleaser](https://goreleaser.com/) and [github actions](https://githu
 
 ## Contributing
 
-We love pull requests! Please see the [contribution guidelines](CONTRIBUTING.md).
+Please see the [contribution guidelines](CONTRIBUTING.md).
 
 
 
